@@ -1,2 +1,2 @@
-# project_sleep_tracker
-The node. js sleep tracker application helps users see patterns in their sleeping habits and the quality and duration of sleep
+# project_solar_heater
+The node.js solar heater installation app can have a lot of useful features for both installers and potential customers.
