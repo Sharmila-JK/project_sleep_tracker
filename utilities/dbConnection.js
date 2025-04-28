@@ -1,31 +1,24 @@
 const mongoose = require('mongoose')
 const dotenv = require('dotenv')
+const errorLogger = require('./errorLogger')
+const constants = require('./constants')
 dotenv.config()
 
 const dbURL = process.env.DB_URL
 
 let connection = {}
 
-connection.dbReconnect = async () => {
-    console.log("DB connection status" + mongoose.connection.readyState )
+connection.dbConnect = async () => {
+    console.log("DB connection status " + mongoose.connection.readyState )
     if ( mongoose.connection.readyState === 0 || mongoose.connection.readyState === 3 ) {
         try {
-            await connection.dbConnect()
+            await mongoose.connect(dbURL)
         }
-        catch ( error ) {
-            throw error
+        catch (error) {
+            let err = new Error(constants.DB_ERR)
+            err.error = error.message
+            return { flag : false, error: err }
         }
-    }
-}
-
-connection.dbConnect = async () => {
-    try {
-        await mongoose.connect(dbURL)
-    }
-    catch (error) {
-        let err = new Error ("Failed to connect DB " + error )
-        err.status = 500
-        throw err
     }
     
 }
