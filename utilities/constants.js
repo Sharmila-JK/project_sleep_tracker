@@ -5,6 +5,7 @@ HTTP_OK : 200,
 HTTP_CREATED : 201,
 HTTP_BAD_REQUEST : 400,
 HTTP_SERVER_ERROR : 500,
+HTTP_UNAUTHORIZED : 401,
 ERROR_LOGGER : "ErrorLogger_",
 REQUEST_LOGGER : "RequestLogger_",
 
@@ -13,8 +14,7 @@ REQUEST_LOGGER : "RequestLogger_",
 CUSTOMER : "/customer",
 INSTALLER : "/installer",
 LOGIN : "/login",
-REGISTER_CUSTOMER : "/registerCustomer",
-REGISTER_INSTALLER : "/registerInstaller",
+REGISTER : "/register",
 
 // Response Messages
 REGISTRATION_SUCCESS : "Registration Successful",
@@ -25,7 +25,10 @@ DB_ERR : "Failed to connect the DB",
 EMAIL_ALREADY_REGISTERED : "Email already registered",
 INVALID_EMAIL : "Invalid Email",
 INVALID_PHONE_NUMBER : "Invalid Phone Number",
-INVALID_PASSWORD : "Invalid Password"
+INVALID_PASSWORD : "Invalid Password",
+LOGIN_SUCCESS : "Login Successful",
+LOGIN_FAILURE : "Login Failed",
+USER_NOT_FOUND : "User not found",
 
 
 })
