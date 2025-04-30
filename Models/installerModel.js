@@ -15,7 +15,7 @@ const installerSchema = new mongoose.Schema({
             "Ramanathapuram", "Ranipet", "Salem", "Sivaganga", "Tenkasi",
             "Thanjavur", "Thiruvannamalai", "Thiruvarur", "Thoothukudi", "Tiruchirappalli",
             "Tirunelveli", "Tirupathur", "Tiruppur", "Thiruvallur", "Vellore", "Villupuram",
-            "Virudhunagar"
+            "Virudhunagar", "Sattur"
         ] },
     password : { type: String, required: true }
 })
