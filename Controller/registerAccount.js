@@ -2,6 +2,7 @@ const dbConnection = require('../utilities/dbConnection');
 const customer = require('../Models/customerModel');
 const installer = require('../Models/installerModel');
 const constants = require('../utilities/constants');
+const formatError = require('../utilities/errorFormat');
 
 let registration = {}
 
@@ -14,9 +15,7 @@ registration.registerCustomer = async (customerObj) => {
             // Check if the email already exists in the database
             let existingCustomer = await customer.findOne({ email: customerObj.email });
             if (existingCustomer) {
-                let err = new Error(constants.EMAIL_ALREADY_REGISTERED);
-                err.error = constants.EMAIL_ALREADY_REGISTERED;
-                err.status = constants.HTTP_BAD_REQUEST
+                let err = formatError(constants.EMAIL_ALREADY_REGISTERED, constants.EMAIL_ALREADY_REGISTERED, constants.HTTP_BAD_REQUEST)
                 throw err; 
             }
             let newCustomer = new customer(customerObj);
@@ -28,8 +27,7 @@ registration.registerCustomer = async (customerObj) => {
                 throw error;
             }
             // Handle unexpected errors
-            let err = new Error(constants.REGISTRATION_FAILURE);
-            err.error = error.message;
+            let err = formatError(constants.REGISTRATION_FAILURE, error.message)
             throw err;
         }
     }
@@ -44,9 +42,7 @@ registration.registerInstaller = async (installerObj) => {
             // Check if the email already exists in the database
             let existingInstaller = await installer.findOne({ email: installerObj.email });
             if (existingInstaller) {
-                let err = new Error(constants.EMAIL_ALREADY_REGISTERED);
-                err.error = constants.EMAIL_ALREADY_REGISTERED;
-                err.status = constants.HTTP_BAD_REQUEST
+                let err = formatError(constants.EMAIL_ALREADY_REGISTERED, constants.EMAIL_ALREADY_REGISTERED, constants.HTTP_BAD_REQUEST)
                 throw err; 
             }
             let newInstaller = new installer(installerObj);
@@ -58,8 +54,7 @@ registration.registerInstaller = async (installerObj) => {
                 throw error;
             }
             // Handle unexpected errors
-            let err = new Error(constants.REGISTRATION_FAILURE);
-            err.error = error.message;
+            let err = formatError(constants.REGISTRATION_FAILURE, error.message)
             throw err;
         }
     }

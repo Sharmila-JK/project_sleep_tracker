@@ -6,6 +6,7 @@ const constants = require('../utilities/constants');
 const Installer = require('../Models/Installer');
 const validator = require('../utilities/validators');
 const updation = require('../Controller/updateDetails');
+const formatError = require('../utilities/errorFormat');
 
 let user = constants.USER_INSTALLER
 
@@ -31,9 +32,7 @@ router.post( constants.LOGIN, async ( req, res, next ) => {
     try {
         // Validate the request body
         if ( !req.body.email || !req.body.password ) {
-            let err = new Error(constants.LOGIN_FAILURE);
-            err.error = constants.MISSING_FIELDS;   
-            err.status = constants.HTTP_BAD_REQUEST
+            let err = formatError( constants.LOGIN_FAILURE, constants.MISSING_FIELDS, constants.HTTP_BAD_REQUEST );
             throw err;
         }
 

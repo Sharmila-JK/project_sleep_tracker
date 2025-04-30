@@ -2,6 +2,7 @@ const installer = require('../Models/installerModel');
 const customer = require('../Models/customerModel');
 const constants = require('../utilities/constants');
 const dbConnection = require('../utilities/dbConnection');
+const formatError = require('../utilities/errorFormat');
 
 let update = {}
 
@@ -20,9 +21,7 @@ update.updateUserDetails = async ( userId, data, user) => {
             }
 
             if (!updatedUserDetails) {
-                let err = new Error(constants.UPDATE_FAILED);
-                err.error = constants.USER_NOT_FOUND;
-                err.status = constants.HTTP_NOT_FOUND
+                let err = formatError(constants.UPDATE_FAILED, constants.USER_NOT_FOUND, constants.HTTP_NOT_FOUND)
                 throw err;
             }
             return updatedUserDetails;
@@ -33,8 +32,7 @@ update.updateUserDetails = async ( userId, data, user) => {
                 throw error;
             }
             // Handle unexpected errors
-            let err = new Error(constants.UPDATE_FAILED);
-            err.error = error.message;
+            let err = formatError(constants.UPDATE_FAILED, error.message) 
             throw err;
         }
     }
@@ -55,9 +53,7 @@ update.deleteAccount = async ( userId, user ) => {
             }
 
             if (!deletedUserDetails) {
-                let err = new Error(constants.DELETE_ACCOUNT_FAILURE);
-                err.error = constants.USER_NOT_FOUND;
-                err.status = constants.HTTP_NOT_FOUND
+                let err = formatError(constants.DELETE_ACCOUNT_FAILURE, constants.USER_NOT_FOUND, constants.HTTP_NOT_FOUND)
                 throw err;
             }
             return deletedUserDetails;
@@ -68,8 +64,7 @@ update.deleteAccount = async ( userId, user ) => {
                 throw error;
             }
             // Handle unexpected errors
-            let err = new Error(constants.DELETE_ACCOUNT_FAILURE);
-            err.error = error.message;
+            let err = formatError(constants.DELETE_ACCOUNT_FAILURE, error.message)
             throw err;
         }
     }

@@ -2,6 +2,7 @@ const installer = require('../Models/installerModel');
 const customer = require('../Models/customerModel');
 const constants = require('../utilities/constants');
 const dbConnection = require('../utilities/dbConnection');
+const formatError = require('../utilities/errorFormat');
 
 let login = {}
 
@@ -21,16 +22,12 @@ login.userLogin = async (req, user) => {
             }
             // Check if the user exists in the database
             if (!userDetails) {
-                let err = new Error(constants.LOGIN_FAILURE);
-                err.error = constants.USER_NOT_FOUND;
-                err.status = constants.HTTP_UNAUTHORIZED
+                let err = formatError(constants.LOGIN_FAILURE, constants.USER_NOT_FOUND, constants.HTTP_UNAUTHORIZED)
                 throw err;
             }
             // Compare the password with the password in the database
             if (req.password !== userDetails.password) {
-                let err = new Error(constants.LOGIN_FAILURE);
-                err.error = constants.INVALID_PASSWORD;
-                err.status = constants.HTTP_UNAUTHORIZED
+                let err = formatError(constants.LOGIN_FAILURE, constants.INVALID_PASSWORD, constants.HTTP_UNAUTHORIZED)
                 throw err;
             }
         }
@@ -40,10 +37,8 @@ login.userLogin = async (req, user) => {
                 throw error;
             }
             // Handle unexpected errors
-            let err = new Error(constants.LOGIN_FAILURE);
-            err.error = error.message;
+            let err = formatError(constants.LOGIN_FAILURE, error.message)
             throw err;
-
         }
     }
 }
@@ -64,9 +59,7 @@ login.getUserDetails = async ( id, user) => {
             }
             // Check if the user exists in the database
             if (!userDetails) {
-                let err = new Error(constants.SEARCH_FAILED);
-                err.error = constants.USER_NOT_FOUND;
-                err.status = constants.HTTP_NOT_FOUND
+                let err = formatError( constants.SEARCH_FAILED, constants.USER_NOT_FOUND, constants.HTTP_NOT_FOUND)
                 throw err;
             }
             return userDetails;
@@ -77,8 +70,7 @@ login.getUserDetails = async ( id, user) => {
                 throw error;
             }
             // Handle unexpected errors
-            let err = new Error(constants.SEARCH_FAILED);
-            err.error = error.message;
+            let err = formatError(constants.SEARCH_FAILED, error.message)
             throw err;
         }
     }
