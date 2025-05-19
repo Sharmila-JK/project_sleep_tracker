@@ -3,6 +3,7 @@ const customer = require('../Models/customerModel');
 const installer = require('../Models/installerModel');
 const constants = require('../utilities/constants');
 const formatError = require('../utilities/errorFormat');
+const passwordUtil = require('../utilities/passwordUtil');
 
 let registration = {}
 
@@ -45,6 +46,11 @@ registration.registerInstaller = async (installerObj) => {
                 let err = formatError(constants.EMAIL_ALREADY_REGISTERED, constants.EMAIL_ALREADY_REGISTERED, constants.HTTP_BAD_REQUEST)
                 throw err; 
             }
+
+            // Encrypt the password before saving
+            let encryptedPassword = await passwordUtil.encryptPassword(installerObj.password);
+            installerObj.password = encryptedPassword;
+
             let newInstaller = new installer(installerObj);
             let installerDetails = await newInstaller.save();
             return installerDetails;

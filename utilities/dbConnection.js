@@ -1,6 +1,5 @@
 const mongoose = require('mongoose')
 const dotenv = require('dotenv')
-const errorLogger = require('./errorLogger')
 const constants = require('./constants')
 dotenv.config()
 

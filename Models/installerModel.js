@@ -17,7 +17,9 @@ const installerSchema = new mongoose.Schema({
             "Tirunelveli", "Tirupathur", "Tiruppur", "Thiruvallur", "Vellore", "Villupuram",
             "Virudhunagar", "Sattur"
         ] },
-    password : { type: String, required: true }
+    password : { type: String, required: true },
+    resetPasswordToken : { type: String },
+    resetPasswordExpires : { type: Date }
 })
 
 

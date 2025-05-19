@@ -3,6 +3,7 @@ const customer = require('../Models/customerModel');
 const constants = require('../utilities/constants');
 const dbConnection = require('../utilities/dbConnection');
 const formatError = require('../utilities/errorFormat');
+const passwordUtil = require('../utilities/passwordUtil');
 
 let login = {}
 
@@ -26,7 +27,8 @@ login.userLogin = async (req, user) => {
                 throw err;
             }
             // Compare the password with the password in the database
-            if (req.password !== userDetails.password) {
+            let isPasswordMatch = await passwordUtil.comparePassword(req.password, userDetails.password);
+            if (!isPasswordMatch) {
                 let err = formatError(constants.LOGIN_FAILURE, constants.INVALID_PASSWORD, constants.HTTP_UNAUTHORIZED)
                 throw err;
             }
