@@ -22,6 +22,8 @@ REGISTER : "/register",
 GET_USER : "/getUser/:userId",
 UPDATE_USER : "/updateUser/:userId",
 DELETE_ACCOUNT : "/deleteAccount/:userId",
+SEND_MAIL_TO_RESET_PASSWORD : "/sendMailToResetPassword",
+RESET_PASSWORD : "/resetPassword/:resetToken",
 
 // Response Messages
 REGISTRATION_SUCCESS : "Registration Successful",
@@ -41,9 +43,14 @@ SEARCH_FAILED : "Search failed",
 UPDATE_SUCCESS : "Update successful",
 UPDATE_FAILED : "Update failed",
 MISSING_FIELDS : "Email/Password is missing",
+MANDATORY_FIELDS_MISSING : "Mandatory fields are missing",
 DELETE_ACCOUNT_SUCCESS : "Account deleted successfully",
 DELETE_ACCOUNT_FAILURE : "Account deletion failed",
-
-
+RESET_PASSWORD_EMAIL_SENT : "Reset password email sent",
+RESET_PASSWORD_EMAIL_FAILED : "Reset password - sending email failed",
+RESET_PASSWORD_FAILED : "Reset password failed",
+RESET_PASSWORD_SUCCESS : "Reset password successful",
+PASSWORD_MISMATCH : "Password and confirm password do not match",
+INVALID_TOKEN : "Invalid or expired password reset token"
 
 })

@@ -1,86 +1,36 @@
 const express = require('express');
 const router = express.Router()
-const registration = require('../Controller/registerAccount');
-const login = require('../Controller/login');
 const constants = require('../utilities/constants');
-const Installer = require('../Models/Installer');
-const validator = require('../utilities/validators');
-const updation = require('../Controller/updateDetails');
-const formatError = require('../utilities/errorFormat');
+const registration = require('../Controller/registerUser');
+const login = require('../Controller/login');
+const getUserDetails = require('../Controller/getUserDetails');
+const updateUserInfo = require('../Controller/updateUserInfo');
+const deleteuserInfo = require('../Controller/deleteUserInfo');
+const sendMailToResetPassword = require('../Controller/sendEmailToResetPassord');
+const resetPassword = require('../Controller/resetPassword');
+
 
 let user = constants.USER_INSTALLER
 
 // Route to register an Installer
-router.post( constants.REGISTER, async ( req, res, next ) => {
-    try {
-        let installerObj = new Installer(req.body);
-
-        // Validate the request body
-        validator.validateEmail(installerObj.email);
-        validator.validatePhoneNumber(installerObj.phoneNumber);
-        validator.validatePassword(installerObj.password);
-        
-        let installerDetails = await registration.registerInstaller(installerObj);
-        res.status( constants.HTTP_CREATED).json( { 'message' : constants.REGISTRATION_SUCCESS, 'data' : installerDetails } )
-    } catch (error) {
-        next(error);
-    }
-});
+router.post( constants.REGISTER, registration);
 
 // Route for installer login
-router.post( constants.LOGIN, async ( req, res, next ) => {
-    try {
-        // Validate the request body
-        if ( !req.body.email || !req.body.password ) {
-            let err = formatError( constants.LOGIN_FAILURE, constants.MISSING_FIELDS, constants.HTTP_BAD_REQUEST );
-            throw err;
-        }
-
-        validator.validateEmail(req.body.email);
-        validator.validatePassword(req.body.password);
-
-        await login.userLogin(req.body, user);
-        res.status( constants.HTTP_OK).json( { 'message' : constants.LOGIN_SUCCESS } )
-    } catch (error) {
-        next(error);
-    }
-});
+router.post( constants.LOGIN, login)
 
 // Route to get installer details
-router.get( constants.GET_USER, async ( req, res, next ) => {
-    try {
-        let installerDetails = await login.getUserDetails(req.params.userId, user);
-        res.status( constants.HTTP_OK).json( { 'message' : constants.USER_DETAILS_SUCCESS, 'data' : installerDetails } )
-    } catch (error) {
-        next(error);
-    }
-});
+router.get( constants.GET_USER, getUserDetails);
 
 // Route to update installer details
-router.put( constants.UPDATE_USER, async ( req, res, next )  => {
-    let installerObj = new Installer(req.body);
-    try {
-        
-      // Validate the request body
-      installerObj.email ? validator.validateEmail(installerObj.email) : null
-      installerObj.phoneNumber ? validator.validatePhoneNumber(installerObj.phoneNumber) : null
-      installerObj.password ? validator.validatePassword(installerObj.password) : null
-
-        let installerDetails = await updation.updateUserDetails(req.params.userId, installerObj, user);
-        res.status( constants.HTTP_OK).json( { 'message' : constants.UPDATE_SUCCESS, 'data' : installerDetails } )
-    } catch (error) {
-        next(error);
-    }
-} )
+router.put( constants.UPDATE_USER, updateUserInfo)
 
 //Route to delete installer account 
-router.delete(constants.DELETE_ACCOUNT, async ( req, res, next ) => {
-    try {
-        let deletedAccount = await updation.deleteAccount(req.params.userId, user);
-        res.status( constants.HTTP_OK).json( { 'message' : constants.DELETE_ACCOUNT_SUCCESS, 'data' : deletedAccount } )
-    } catch (error) {
-        next(error);
-    }
-})
+router.delete(constants.DELETE_ACCOUNT, deleteuserInfo)
+
+// Route to send email for password reset
+router.post(constants.SEND_MAIL_TO_RESET_PASSWORD, sendMailToResetPassword)
+
+// Route to reset password
+router.put(constants.RESET_PASSWORD, resetPassword)
 
 module.exports = router

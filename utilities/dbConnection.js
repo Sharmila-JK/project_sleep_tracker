@@ -1,6 +1,7 @@
 const mongoose = require('mongoose')
 const dotenv = require('dotenv')
 const constants = require('./constants')
+const formatError = require('./errorFormat');
 dotenv.config()
 
 const dbURL = process.env.DB_URL
@@ -14,8 +15,7 @@ connection.dbConnect = async () => {
             await mongoose.connect(dbURL)
         }
         catch (error) {
-            let err = new Error(constants.DB_ERR)
-            err.error = error.message
+            let err = formatError(constants.DB_ERR, error.message, constants.HTTP_SERVER_ERROR)
             return { flag : false, error: err }
         }
     }

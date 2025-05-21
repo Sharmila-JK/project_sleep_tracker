@@ -4,78 +4,71 @@ const constants = require('../utilities/constants');
 const dbConnection = require('../utilities/dbConnection');
 const formatError = require('../utilities/errorFormat');
 const passwordUtil = require('../utilities/passwordUtil');
+const validator = require('../utilities/validators');
 
-let login = {}
 
-// Function to handle users login
-login.userLogin = async (req, user) => {
-    let userDetails
+module.exports = async (req, res, next) => {
     let dbConnect = await dbConnection.dbConnect();
     if (dbConnect && dbConnect.flag === false) {
-        throw dbConnect.error;
+        next(dbConnect.error)
     } else {
         try {
-            if ( user === constants.USER_INSTALLER ) {
-               userDetails = await installer.findOne({ email: req.email });
-            }
-            else {
-                userDetails = await customer.findOne({ email: req.email });
-            }
+            // Validate the request body
+            await validateInput(req);
+
             // Check if the user exists in the database
-            if (!userDetails) {
-                let err = formatError(constants.LOGIN_FAILURE, constants.USER_NOT_FOUND, constants.HTTP_UNAUTHORIZED)
-                throw err;
-            }
+            let userDetails = await checkUserExists(req.body.role, req.body.email);
+
             // Compare the password with the password in the database
-            let isPasswordMatch = await passwordUtil.comparePassword(req.password, userDetails.password);
+            let isPasswordMatch = await passwordUtil.comparePassword(req.body.password, userDetails.password);
             if (!isPasswordMatch) {
                 let err = formatError(constants.LOGIN_FAILURE, constants.INVALID_PASSWORD, constants.HTTP_UNAUTHORIZED)
                 throw err;
             }
+            res.status( constants.HTTP_OK).json( { 'message' : constants.LOGIN_SUCCESS, 'data' : userDetails } )
         }
         catch ( error ) {
             // Check if the error is an expected one and rethrow it
-            if (error.error === constants.USER_NOT_FOUND || error.error === constants.INVALID_PASSWORD) {
-                throw error;
+            if (error.message === constants.LOGIN_FAILURE) {
+                next(error)
             }
             // Handle unexpected errors
             let err = formatError(constants.LOGIN_FAILURE, error.message)
-            throw err;
+            next(err)
         }
     }
 }
 
-// Function to get user details
-login.getUserDetails = async ( id, user) => {
-    let userDetails
-    let dbConnect = await dbConnection.dbConnect();
-    if (dbConnect && dbConnect.flag === false) {
-        throw dbConnect.error;
-    } else {
-        try {
-            if ( user === constants.USER_INSTALLER ) {
-               userDetails = await installer.findOne({ _id : id});
-            }
-            else {
-                userDetails = await customer.findOne({ _id : id });
-            }
-            // Check if the user exists in the database
-            if (!userDetails) {
-                let err = formatError( constants.SEARCH_FAILED, constants.USER_NOT_FOUND, constants.HTTP_NOT_FOUND)
-                throw err;
-            }
-            return userDetails;
-        }
-        catch ( error ) {
-            // Check if the error is an expected one and rethrow it
-            if (error.error === constants.USER_NOT_FOUND) {
-                throw error;
-            }
-            // Handle unexpected errors
-            let err = formatError(constants.SEARCH_FAILED, error.message)
-            throw err;
-        }
+async function validateInput(req) {
+    // Validate the request body
+    if ( !req.body.email || !req.body.password ) {
+        let err = formatError( constants.LOGIN_FAILURE, constants.MISSING_FIELDS, constants.HTTP_BAD_REQUEST );
+        throw err;
+    }
+    if (!validator.validateEmail(req.body.email)) {
+        let err = formatError(constants.LOGIN_FAILURE, constants.INVALID_EMAIL, constants.HTTP_BAD_REQUEST)
+        throw err; 
+    }
+    if(!validator.validatePassword(req.body.password)) {
+        let err = formatError(constants.LOGIN_FAILURE, constants.INVALID_PASSWORD, constants.HTTP_BAD_REQUEST)
+        throw err; 
     }
 }
 
-module.exports = login
+async function checkUserExists(role, email) {
+    let userDetails;
+    try {
+        if (role === constants.USER_CUSTOMER) {
+            userDetails = await customer.findOne({ email: email });
+        } else {
+            userDetails = await installer.findOne({ email: email });
+        }
+        if (!userDetails) {
+            let err = formatError(constants.LOGIN_FAILURE, constants.USER_NOT_FOUND, constants.HTTP_UNAUTHORIZED);
+            throw err;
+        }
+        return userDetails;
+    } catch (error) {
+        throw error;
+    }
+}

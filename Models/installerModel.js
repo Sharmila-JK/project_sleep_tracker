@@ -1,12 +1,12 @@
 const mongoose = require('mongoose')
 
 const installerSchema = new mongoose.Schema({
-    companyName : { type: String, required: true },
+    name : { type: String, required: true },
     email : { type: String, unique: true },
-    phoneNumber : { type: Number, required: true },
-    location : { type: String, required: true },
+    phoneNumber : { type: Number },
+    location : { type: String },
     serviceArea: {
-        type: [String], required: true,
+        type: [String],
         enum: [
             "Ariyalur", "Chengalpattu", "Chennai", "Coimbatore", "Cuddalore",
             "Dharmapuri", "Dindigul", "Erode", "Kallakurichi", "Kancheepuram",

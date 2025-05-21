@@ -1,88 +1,33 @@
 const express = require('express');
 const router = express.Router();
-const registration = require('../Controller/registerAccount');
-const Customer = require('../Models/customer');
 const constants = require('../utilities/constants');
-const validator = require('../utilities/validators');
+const registration = require('../Controller/registerUser');
 const login = require('../Controller/login');
-const updation = require('../Controller/updateDetails');
-const formatError = require('../utilities/errorFormat');
-
-let user = constants.USER_CUSTOMER
-
+const getUserDetails = require('../Controller/getUserDetails');
+const updateUserInfo = require('../Controller/updateUserInfo');
+const deleteUserInfo = require('../Controller/deleteUserInfo');
+const sendMailToResetPassword = require('../Controller/sendEmailToResetPassord');
+const resetPassword = require('../Controller/resetPassword');
 
 // Route to register a customer
-router.post( constants.REGISTER, async ( req, res, next ) => {
-    try {
-        let customerObj = new Customer(req.body);
-
-         // Validate the request body
-        validator.validateEmail(customerObj.email);
-        validator.validatePhoneNumber(customerObj.phoneNumber);
-        validator.validatePassword(customerObj.password);
-
-        let customerDetails = await registration.registerCustomer(customerObj);
-        res.status( constants.HTTP_CREATED).json( { 'message' : constants.REGISTRATION_SUCCESS, 'data' : customerDetails } )
-    } catch (error) {
-        next(error);
-    }
-});
+router.post( constants.REGISTER, registration)
 
 // Route for customer login
-router.post( constants.LOGIN, async ( req, res, next ) => {
-    try {
-        // Validate the request body
-        if ( !req.body.email || !req.body.password ) {
-            let err = formatError( constants.LOGIN_FAILURE, constants.MISSING_FIELDS, constants.HTTP_BAD_REQUEST );
-            throw err;
-        }
-
-        validator.validateEmail(req.body.email);
-        validator.validatePassword(req.body.password);
-
-        await login.userLogin(req.body, user);
-        res.status( constants.HTTP_OK).json( { 'message' : constants.LOGIN_SUCCESS } )
-    } catch (error) {
-        next(error);
-    }
-});
+router.post( constants.LOGIN, login)
 
 // Route to get customer details
-router.get( constants.GET_USER, async ( req, res, next ) => {
-    try {
-        let customerDetails = await login.getUserDetails(req.params.userId, user);
-        res.status( constants.HTTP_OK).json( { 'message' : constants.USER_DETAILS_SUCCESS, 'data' : customerDetails } )
-    } catch (error) {
-        next(error);
-    }
-});
+router.get( constants.GET_USER, getUserDetails)
 
 // Route to update customer details
-router.put( constants.UPDATE_USER, async ( req, res, next )  => {
-    let customerObj = new Customer(req.body);
-    try {
-
-        // Validate the request body
-        customerObj.email ? validator.validateEmail(customerObj.email) : null
-        customerObj.phoneNumber ? validator.validatePhoneNumber(customerObj.phoneNumber) : null
-        customerObj.password ? validator.validatePassword(customerObj.password) : null
-        
-        let customerDetails = await updation.updateUserDetails(req.params.userId, customerObj, user);
-        res.status( constants.HTTP_OK).json( { 'message' : constants.UPDATE_SUCCESS, 'data' : customerDetails } )
-    } catch (error) {
-        next(error);
-    }
-
-} )
+router.put( constants.UPDATE_USER, updateUserInfo)
 
 // Route to delete customer account
-router.delete(constants.DELETE_ACCOUNT, async ( req, res, next ) => {
-    try {
-        let deletedAccount = await updation.deleteAccount(req.params.userId, user);
-        res.status( constants.HTTP_OK).json( { 'message' : constants.DELETE_ACCOUNT_SUCCESS, 'data' : deletedAccount } )
-    } catch (error) {
-        next(error);
-    }
-})
+router.delete(constants.DELETE_ACCOUNT, deleteUserInfo)
+
+// Route to send email for password reset
+router.post(constants.SEND_MAIL_TO_RESET_PASSWORD, sendMailToResetPassword)
+
+// Route to reset password
+router.put(constants.RESET_PASSWORD, resetPassword)
 
 module.exports = router

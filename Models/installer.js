@@ -1,6 +1,6 @@
 class Installer {
     constructor(obj) {
-        this.companyName = obj.companyName
+        this.name = obj.name
         this.email = obj.email
         this.phoneNumber = obj.phoneNumber
         this.location = obj.location
