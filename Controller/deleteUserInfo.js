@@ -11,7 +11,7 @@ module.exports = async ( req, res, next ) => {
     } else {
         try {
             let deletedUserDetails
-            if ( req.body.user === constants.USER_CUSTOMER ) {
+            if ( req.body && req.body.role === constants.USER_CUSTOMER ) {
                 deletedUserDetails = await customer.findByIdAndDelete(req.params.userId);
             }
             else {
@@ -29,9 +29,12 @@ module.exports = async ( req, res, next ) => {
             if (error.message === constants.DELETE_ACCOUNT_FAILURE) {
                 next(error)
             }
-            // Handle unexpected errors
-            let err = formatError(constants.DELETE_ACCOUNT_FAILURE, error.message)
-            next(err)
+            else {
+                // Handle unexpected errors
+                let err = formatError(constants.DELETE_ACCOUNT_FAILURE, error.message)
+                next(err)
+            }
+           
         }
     }
 }

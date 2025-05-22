@@ -25,6 +25,11 @@ module.exports = async ( req, res, next) => {
             // Validate the input data
             await validateInput(userObj);
 
+            // Check if the email already exists
+            if (userObj.email) {
+                await checkEmailExists(role, userObj.email);
+            }
+
             let updatedUserDetails = await updateUser(role, req.params.userId, userObj);
             res.status( constants.HTTP_OK).json( { 'message' : constants.UPDATE_SUCCESS, 'data' : updatedUserDetails } )
         }
@@ -33,9 +38,11 @@ module.exports = async ( req, res, next) => {
             if (error.message === constants.UPDATE_FAILED) {
                 next(error)
             }
-            // Handle unexpected errors
-            let err = formatError(constants.UPDATE_FAILED, error.message) 
-            next(err)
+            else {
+                // Handle unexpected errors
+                let err = formatError(constants.UPDATE_FAILED, error.message) 
+                next(err)
+            }
         }
     }
 }
@@ -53,6 +60,25 @@ async function validateInput ( userObj ) {
             throw err; 
         }
     }
+}
+
+async function checkEmailExists ( role,  email ) {
+    try {
+        let existingUser
+        if ( role === constants.USER_CUSTOMER ) {
+            existingUser = await customer.findOne({ email: email })
+        }
+        else {
+            existingUser = await installer.findOne({ email: email })
+        }
+        if (existingUser) {
+            let err = formatError(constants.UPDATE_FAILED, constants.EMAIL_EXISTS, constants.HTTP_BAD_REQUEST)
+            throw err; 
+        }
+    }
+    catch (error) {
+        throw error
+    }   
 }
 
 async function updateUser(role, userId, data) {

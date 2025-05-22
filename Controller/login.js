@@ -22,7 +22,7 @@ module.exports = async (req, res, next) => {
             // Compare the password with the password in the database
             let isPasswordMatch = await passwordUtil.comparePassword(req.body.password, userDetails.password);
             if (!isPasswordMatch) {
-                let err = formatError(constants.LOGIN_FAILURE, constants.INVALID_PASSWORD, constants.HTTP_UNAUTHORIZED)
+                let err = formatError(constants.LOGIN_FAILURE, constants.WRONG_PASSWORD, constants.HTTP_UNAUTHORIZED)
                 throw err;
             }
             res.status( constants.HTTP_OK).json( { 'message' : constants.LOGIN_SUCCESS, 'data' : userDetails } )
@@ -31,10 +31,11 @@ module.exports = async (req, res, next) => {
             // Check if the error is an expected one and rethrow it
             if (error.message === constants.LOGIN_FAILURE) {
                 next(error)
+            } else {
+                // Handle unexpected errors
+                let err = formatError(constants.LOGIN_FAILURE, error.message)
+                next(err)    
             }
-            // Handle unexpected errors
-            let err = formatError(constants.LOGIN_FAILURE, error.message)
-            next(err)
         }
     }
 }

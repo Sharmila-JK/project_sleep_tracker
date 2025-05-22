@@ -13,7 +13,7 @@ module.exports = async ( req, res, next) => {
     } else {
         try {
             let userDetails
-            if ( req.body.user === constants.USER_CUSTOMER ) {
+            if ( req.body && req.body.role === constants.USER_CUSTOMER ) {
                userDetails = await customer.findOne({ _id : req.params.userId});
             }
             else {
@@ -28,12 +28,15 @@ module.exports = async ( req, res, next) => {
         }
         catch ( error ) {
             // Check if the error is an expected one and rethrow it
-            if (error.error === constants.SEARCH_FAILED) {
+            if (error.message === constants.SEARCH_FAILED) {
                 next(error)
             }
-            // Handle unexpected errors
-            let err = formatError(constants.SEARCH_FAILED, error.message)
-            next(err)
+            else {
+                // Handle unexpected errors
+                let err = formatError(constants.SEARCH_FAILED, error.message)
+                next(err)
+            }
+            
         }
     }
 }

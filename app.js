@@ -3,9 +3,8 @@ const express = require('express')
 const dotenv = require('dotenv')
 const errorLogger = require('./utilities/errorLogger')
 const requestLogger = require('./utilities/requestLogger')
-const customerRouter = require('./routing.js/customer')
-const installerRouter = require('./routing.js/installer')
-const constants = require('./utilities/constants')
+const routes = require('./routing.js/routes')
+
 
 
 const app = express()
@@ -17,8 +16,7 @@ let PORT = process.env.PORT || 3000
 app.use(express.json())
 app.use(express.urlencoded({ extended: true }))
 app.use(requestLogger)
-app.use(constants.CUSTOMER, customerRouter)
-app.use(constants.INSTALLER, installerRouter)
+app.use(routes)
 
 
 // Error handling middleware

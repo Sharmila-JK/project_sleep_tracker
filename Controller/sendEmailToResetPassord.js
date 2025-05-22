@@ -57,7 +57,8 @@ async function saveTokenToDatabase(req, res, token) {
             userDetails = await installer.findOne({ email: req.body.email }); // Fix query syntax
         }
         if (!userDetails) {
-            res.status(constants.HTTP_OK).json({ message: constants.RESET_PASSWORD_EMAIL_SENT});
+            let err = formatError(constants.RESET_PASSWORD_EMAIL_FAILED, constants.USER_NOT_FOUND, constants.HTTP_BAD_REQUEST);
+            throw err;
         }
         userDetails.resetPasswordToken = token.resetPasswordToken;
         userDetails.resetPasswordExpires = token.resetTokenExpiry;
@@ -77,7 +78,7 @@ async function sendResetPasswordEmail(req, resetToken) {
             },
         });
 
-        let resetURL = `${req.protocol}://${req.get('host')}/${req.body.role}/resetPassword/${resetToken}`;
+        let resetURL = `${req.protocol}://${req.get('host')}/resetPassword/${resetToken}`;
 
         let message = `
           <p>You are receiving this because you (or someone else) has requested the reset of the password for your account.</p>
@@ -92,7 +93,6 @@ async function sendResetPasswordEmail(req, resetToken) {
             subject: 'Password Reset Request',
             html: message,
         } 
-
         await transporter.sendMail(mailOptions);
         console.log('Email sent successfully');
     } 
