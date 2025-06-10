@@ -24,6 +24,7 @@ UPDATE_USER : "/updateUser/:userId",
 DELETE_ACCOUNT : "/deleteAccount/:userId",
 SEND_MAIL_TO_RESET_PASSWORD : "/sendMailToResetPassword",
 RESET_PASSWORD : "/resetPassword/:resetToken",
+LOAD_VIDEO: "/loadVideo/:videoFilePath",
 
 // Response Messages
 REGISTRATION_SUCCESS : "Registration Successful",
@@ -54,6 +55,8 @@ RESET_PASSWORD_EMAIL_FAILED : "Reset password - sending email failed",
 RESET_PASSWORD_FAILED : "Reset password failed",
 RESET_PASSWORD_SUCCESS : "Reset password successful",
 PASSWORD_MISMATCH : "Password and confirm password do not match",
-INVALID_TOKEN : "Invalid or expired password reset token"
+INVALID_TOKEN : "Invalid or expired password reset token",
+INVALID_ACCESS_TOKEN : "Invalid access token",
+INVALID_ACCESS : "No access for invalid user"
 
 })

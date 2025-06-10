@@ -5,6 +5,7 @@ const dbConnection = require('../utilities/dbConnection');
 const formatError = require('../utilities/errorFormat');
 const passwordUtil = require('../utilities/passwordUtil');
 const validator = require('../utilities/validators');
+const jwtUtil = require('../utilities/jwtUtil');
 
 
 module.exports = async (req, res, next) => {
@@ -25,7 +26,10 @@ module.exports = async (req, res, next) => {
                 let err = formatError(constants.LOGIN_FAILURE, constants.WRONG_PASSWORD, constants.HTTP_UNAUTHORIZED)
                 throw err;
             }
-            res.status( constants.HTTP_OK).json( { 'message' : constants.LOGIN_SUCCESS, 'data' : userDetails } )
+
+            let updatedUserDetails = await updateUserToken(req, userDetails);
+
+            res.status( constants.HTTP_OK).json( { 'message' : constants.LOGIN_SUCCESS, 'data' : updatedUserDetails } )
         }
         catch ( error ) {
             // Check if the error is an expected one and rethrow it
@@ -71,5 +75,27 @@ async function checkUserExists(role, email) {
         return userDetails;
     } catch (error) {
         throw error;
+    }
+}
+
+async function updateUserToken(req, userDetails) {
+    try {
+        let updatedUserDetails;
+        let tokenPayload = {
+            userId: userDetails._id,
+            email: userDetails.email,
+            role: req.body.role ? req.body.role : constants.USER_INSTALLER
+        }
+        let token = jwtUtil.generateAccessToken(tokenPayload)
+
+        // Update the user document with the new token
+        if (req.body.role === constants.USER_CUSTOMER) {
+            updatedUserDetails = await customer.findOneAndUpdate({ _id: userDetails._id }, { $set: { accessToken: token } }, { new: true, runValidators: true });
+        } else {
+            updatedUserDetails = await installer.findOneAndUpdate({ _id: userDetails._id }, { $set: { accessToken: token } }, { new: true, runValidators: true });
+        }
+        return updatedUserDetails
+    } catch (error) {
+        throw error
     }
 }

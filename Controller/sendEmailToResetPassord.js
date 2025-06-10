@@ -6,6 +6,7 @@ const installer = require("../Models/installerModel");
 const dbConnection = require("../utilities/dbConnection");
 const formatError = require("../utilities/errorFormat");
 const validator = require("../utilities/validators");
+const jwtUtil = require("../utilities/jwtUtil");
 
 module.exports = async (req, res, next) => {
     let dbConnect = await dbConnection.dbConnect();
@@ -13,13 +14,18 @@ module.exports = async (req, res, next) => {
         next(dbConnect.error);
     } else {
         try {
+            let role = req.body.role ? req.body.role : constants.USER_INSTALLER;
+
+            // Check if user is valid
+            await checkValidUser(role, req.headers.accesstoken, req.body.email);
+
             await validateInput(req.body);
             
             // Generate a reset password token
             let token = passwordUtil.generateResetToken()
 
             // Save the token to the database
-            await saveTokenToDatabase(req, res, token);
+            await saveTokenToDatabase(req, token);
 
             // Send the reset password email
             await sendResetPasswordEmail(req, token.resetToken);
@@ -48,21 +54,18 @@ async function validateInput ( userObj ) {
     }
 }
 
-async function saveTokenToDatabase(req, res, token) {
+async function saveTokenToDatabase(req, token) {
     try {
         let userDetails;
         if (req.body.role === constants.USER_CUSTOMER) {
-            userDetails = await customer.findOne({ email: req.body.email }); // Fix query syntax
+            userDetails = await customer.findOneAndUpdate({ email: req.body.email }, { $set: { resetPasswordToken: token.resetPasswordToken, resetPasswordExpires: token.resetTokenExpiry } }, { new: true, runValidators: true });     
         } else {
-            userDetails = await installer.findOne({ email: req.body.email }); // Fix query syntax
+            userDetails = await installer.findOneAndUpdate({ email: req.body.email }, { $set: { resetPasswordToken: token.resetPasswordToken, resetPasswordExpires: token.resetTokenExpiry } }, { new: true, runValidators: true }); 
         }
         if (!userDetails) {
             let err = formatError(constants.RESET_PASSWORD_EMAIL_FAILED, constants.USER_NOT_FOUND, constants.HTTP_BAD_REQUEST);
             throw err;
         }
-        userDetails.resetPasswordToken = token.resetPasswordToken;
-        userDetails.resetPasswordExpires = token.resetTokenExpiry;
-        await userDetails.save({ validateBeforeSave: false });
     } catch (error) {
         throw error;
     }   
@@ -102,3 +105,25 @@ async function sendResetPasswordEmail(req, resetToken) {
     }
 }
 
+async function checkValidUser( role, token, email ) {
+    try {
+        let decodedToken = jwtUtil.verifyAccessToken(token);
+        if (decodedToken.role !== role) {
+            let err = formatError(constants.RESET_PASSWORD_EMAIL_FAILED, constants.INVALID_ACCESS, constants.HTTP_UNAUTHORIZED);
+            throw err;
+        }
+        if ( decodedToken.email !== email) {
+            let err = formatError(constants.RESET_PASSWORD_EMAIL_FAILED, constants.INVALID_ACCESS, constants.HTTP_UNAUTHORIZED);
+            throw err;
+        }
+    } catch (error) {
+        if ( error.message === constants.RESET_PASSWORD_EMAIL_FAILED){
+            throw error
+        }
+        else {
+            let err = formatError(constants.RESET_PASSWORD_EMAIL_FAILED, constants.INVALID_ACCESS_TOKEN, constants.HTTP_UNAUTHORIZED);
+            throw err;
+        }
+        
+    }
+}

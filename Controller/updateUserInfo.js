@@ -6,6 +6,7 @@ const formatError = require('../utilities/errorFormat');
 const Customer = require('../Models/customer');
 const Installer = require('../Models/installer');
 const validator = require('../utilities/validators');
+const jwtUtil = require('../utilities/jwtUtil');
 
 module.exports = async ( req, res, next) => {
     let dbConnect = await dbConnection.dbConnect();
@@ -13,7 +14,8 @@ module.exports = async ( req, res, next) => {
         next(dbConnect.error)
     } else {
         try {
-            let role = req.body.role;
+            let role = req.body.role ? req.body.role : constants.USER_INSTALLER;
+            let token = req.headers.accesstoken
             let userObj;
             if ( role === constants.USER_CUSTOMER  ) {
                 userObj = new Customer(req.body)
@@ -21,6 +23,9 @@ module.exports = async ( req, res, next) => {
             else {
                 userObj = new Installer(req.body)
             }
+
+            // Check if the user is valid
+            await checkValidUser(role, token, req.params.userId);
 
             // Validate the input data
             await validateInput(userObj);
@@ -44,6 +49,30 @@ module.exports = async ( req, res, next) => {
                 next(err)
             }
         }
+    }
+}
+
+async function checkValidUser( role, token, userId ) {
+    try {
+        let decodedToken = jwtUtil.verifyAccessToken(token);
+        if (decodedToken.role !== role) {
+            let err = formatError(constants.UPDATE_FAILED, constants.INVALID_ACCESS, constants.HTTP_UNAUTHORIZED);
+            throw err;
+        }
+        if ( decodedToken.userId !== userId ) {
+            let err = formatError(constants.UPDATE_FAILED, constants.INVALID_ACCESS, constants.HTTP_UNAUTHORIZED);
+            throw err;
+        }
+    } catch (error) {
+        if ( error.message === constants.UPDATE_FAILED){
+            throw error
+        }
+        else {
+            console.log(error)
+            let err = formatError(constants.UPDATE_FAILED, constants.INVALID_ACCESS_TOKEN, constants.HTTP_UNAUTHORIZED);
+            throw err;
+        }
+        
     }
 }
 
@@ -94,5 +123,5 @@ async function updateUser(role, userId, data) {
         let err = formatError(constants.UPDATE_FAILED, constants.USER_NOT_FOUND, constants.HTTP_NOT_FOUND)
         throw err;
     }
-    return updatedUserDetails;
 }
+  

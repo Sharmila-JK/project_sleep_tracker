@@ -7,8 +7,10 @@ const customerSchema = new mongoose.Schema({
     location : { type: String },
     password : { type: String, required: true },
     resetPasswordToken : { type: String },
-    resetPasswordExpires : { type: Date }
+    resetPasswordExpires : { type: Date },
+    accessToken : { type: String }
 })
+
 
 
 module.exports = mongoose.model('customer', customerSchema)

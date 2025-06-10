@@ -5,6 +5,7 @@ const formatError = require('../utilities/errorFormat');
 const dbConnection = require('../utilities/dbConnection');
 const passwordUtil = require('../utilities/passwordUtil');
 const validator = require('../utilities/validators');
+const jwtUtil = require('../utilities/jwtUtil');
 
 module.exports = async (req, res, next) => {
     let dbConnect = await dbConnection.dbConnect();
@@ -12,11 +13,16 @@ module.exports = async (req, res, next) => {
         next(dbConnect.error);
     } else {
         try {
+            let role = req.body.role ? req.body.role : constants.USER_INSTALLER;
+
+            // Check if the user is valid
+            await checkValidUser(role, req.headers.accesstoken, )
+
             // Validate the input
             await validateInput(req.body);
 
             // Check if the token is valid and not expired
-            let userDetails = await checkTokenInDatabase(req.body.role, req.params.resetToken);
+            let userDetails = await checkTokenInDatabase(role, req.params.resetToken);
 
             // Update the password in the database
             await updatePassword ( userDetails, req.body.password )
@@ -67,6 +73,25 @@ async function checkTokenInDatabase(role, token) {
         return userDetails
     } catch (error) {
         throw error
+    }
+}
+
+async function checkValidUser( role, token) {
+    try {
+        let decodedToken = jwtUtil.verifyAccessToken(token);
+        if (decodedToken.role !== role) {
+            let err = formatError(constants.RESET_PASSWORD_FAILED, constants.INVALID_ACCESS, constants.HTTP_UNAUTHORIZED);
+            throw err;
+        }
+    } catch (error) {
+        if ( error.message === constants.RESET_PASSWORD_FAILED){
+            throw error
+        }
+        else {
+            console.log( error )
+            let err = formatError(constants.RESET_PASSWORD_FAILED, constants.INVALID_ACCESS_TOKEN, constants.HTTP_UNAUTHORIZED);
+            throw err;
+        }
     }
 }
 
